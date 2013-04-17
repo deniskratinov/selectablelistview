@@ -6,28 +6,34 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.CheckedTextView;
+import android.widget.Checkable;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
-public class ListViewActivity extends  SherlockListActivity {
+public class ListViewActivity extends SherlockListActivity {
 
 	private ActionMode mActionMode;
-	private String[] mItems = {"Albert Einstein", "Isaac Newton", "Galileo Galilei", "Thomas Edison"};
+	private String[] mItems = {"Eclair", "Froyo", "Gingerbread", "Honeycomb", "Ice Cream Sandwich", "Jelly Bean"};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_list_view);
 		
+		//add on long click listener to start action mode
 		getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
 			@Override
 			public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long id) {
@@ -42,37 +48,36 @@ public class ListViewActivity extends  SherlockListActivity {
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {		
 		if(mActionMode == null) {
-			// no items selected, so we can perform item click actions
+			// no items selected, so perform item click actions
 		} else
+			// add or remove selection for current list item
 			onListItemCheck(position);		
-	}
+	}	
 	
 	private void onListItemCheck(int position) {
         SelectableAdapter adapter = (SelectableAdapter) getListAdapter();
         adapter.toggleSelection(position);
-        boolean hasCheckedItems = adapter.getSelectedCount() > 0;
+        boolean hasCheckedItems = adapter.getSelectedCount() > 0;        
 
         if (hasCheckedItems && mActionMode == null)
-            mActionMode = startActionMode(new MyActionModeCallback());
+        	// there are some selected items, start the actionMode
+            mActionMode = startActionMode(new ActionModeCallback());
         else if (!hasCheckedItems && mActionMode != null)
+        	// there no selected items, finish the actionMode
             mActionMode.finish();
-    }
+        
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// TODO Auto-generated method stub
-		return super.onCreateOptionsMenu(menu);
-	}
+        if(mActionMode != null)
+        	mActionMode.setTitle(String.valueOf(adapter.getSelectedCount()) + " selected");
+    }
 	
 	private class SelectableAdapter extends ArrayAdapter<String>{
 
 		private SparseBooleanArray mSelectedItemsIds;
-        private int mSelectedCount;
 		
 		public SelectableAdapter(Context context, String[] objects) {
-			super(context, R.layout.selectable_list_item, R.id.item_text, objects);
+			super(context, android.R.layout.simple_list_item_1, objects);
 			mSelectedItemsIds = new SparseBooleanArray();
-            mSelectedCount = 0;
 		}
 		
 		public void toggleSelection(int position)
@@ -82,86 +87,79 @@ public class ListViewActivity extends  SherlockListActivity {
 
         public void removeSelection() {
             mSelectedItemsIds = new SparseBooleanArray();
-            mSelectedCount = 0;
             notifyDataSetChanged();
         }
 
         public void selectView(int position, boolean value)
         {
-            boolean oldValue = mSelectedItemsIds.get(position);
-
             if(value)
                 mSelectedItemsIds.put(position, value);
             else
                 mSelectedItemsIds.delete(position);
-
-            if (oldValue != value) {
-                if (value) 
-                    mSelectedCount++;
-                else
-                    mSelectedCount--;                
-            }
+            
             notifyDataSetChanged();
         }
         
         public int getSelectedCount() {
-            return mSelectedCount;
+            return mSelectedItemsIds.size();// mSelectedCount;
+        }
+        
+        public SparseBooleanArray getSelectedIds() {
+        	return mSelectedItemsIds;
         }
         
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
         	
-        	ViewHolder viewHolder;       	
-        	
         	if(convertView == null){
         		LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(LAYOUT_INFLATER_SERVICE);
-        		convertView = inflater.inflate(R.layout.selectable_list_item, null);
-        		
-        		viewHolder = new ViewHolder();
-        		viewHolder.iconSelected = (ImageView) convertView.findViewById(R.id.item_icon_selected);
-        		viewHolder.text = (TextView) convertView.findViewById(R.id.item_text);
-        		
-        		convertView.setTag(viewHolder);
-        	} else
-        		viewHolder = (ViewHolder) convertView.getTag();
+        		convertView = inflater.inflate(android.R.layout.simple_list_item_1, null);
+        	}         	
+        	((TextView) convertView).setText(getItem(position));    
+        	//change background color if list item is selected
+        	convertView.setBackgroundColor(mSelectedItemsIds.get(position)? 0x9934B5E4: Color.TRANSPARENT);        	
         	
-        	viewHolder.text.setText(getItem(position));
-        	
-        	int itemVisibility = mSelectedItemsIds.get(position)? View.VISIBLE: View.GONE;
-        	viewHolder.iconSelected.setVisibility(itemVisibility);
-        	
-        	return super.getView(position, convertView, parent);
+        	return convertView;
         }
-        
-        private class ViewHolder {
-        	public ImageView iconSelected;
-        	public TextView text;
-        }
+
 	}
 	
-	private class MyActionModeCallback implements ActionMode.Callback {
+	private class ActionModeCallback implements ActionMode.Callback {
 
 		@Override
 		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-			// inflating the contextual menu
+			// inflate contextual menu	
 			mode.getMenuInflater().inflate(R.menu.contextual_list_view, menu);
 			return true;
 		}
 
 		@Override
-		public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+		public boolean onPrepareActionMode(ActionMode mode, Menu menu) {			
 			return false;
 		}
 
 		@Override
 		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-			// here you can delete selected items
+			// retrieve selected items and print them out
+			SelectableAdapter adapter = (SelectableAdapter) ListViewActivity.this.getListAdapter();
+			SparseBooleanArray selected = adapter.getSelectedIds();
+			StringBuilder message = new StringBuilder();			
+			for (int i = 0; i < selected.size(); i++){				
+			    if (selected.valueAt(i)) {
+			    	String selectedItem = adapter.getItem(selected.keyAt(i));
+			    	message.append(selectedItem + "\n");
+			    }
+			}			
+			Toast.makeText(ListViewActivity.this, message.toString(), Toast.LENGTH_LONG).show();
+			
+			// close action mode
 			mode.finish();
 			return false;
 		}
 
 		@Override
 		public void onDestroyActionMode(ActionMode mode) {
+			// remove selection 
 			SelectableAdapter adapter = (SelectableAdapter) getListAdapter();
 			adapter.removeSelection();
 			mActionMode = null;

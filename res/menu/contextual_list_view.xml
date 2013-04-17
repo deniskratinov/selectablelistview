@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:id="@+id/remove_item" 
-        android:title="Remove"
-        android:icon="@drawable/ic_content_discard"/>
+    <item android:id="@+id/print_item" 
+        android:title="Print"/>
 </menu>
