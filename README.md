@@ -1,6 +1,8 @@
-Longclick multiselectable ListView with ActionBarSherlock
+Contextual Action Bar with ListView
 ==================
-Source code for tutorial. (is under construction)
+
+This is an example of using Contextual Action Bar with ActionBarSherlock and ListView. The case when data items selected with long-click. The tutorial can be found [here]. (http://androidperspective.wordpress.com/)
+
 
 ![Alt text](screenshot.png "screenshot")
 
