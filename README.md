@@ -1,7 +1,7 @@
 Contextual Action Bar with ListView
 ==================
 
-This is an example of using Contextual Action Bar with ActionBarSherlock and ListView. The case when data items selected with long-click. The tutorial can be found [here]. (http://androidperspective.wordpress.com/)
+This is an example of using Contextual Action Bar with ActionBarSherlock and ListView. The case when data items selected with long-click. The tutorial can be found [here](http://androidperspective.wordpress.com/).
 
 
 ![Alt text](screenshot.png "screenshot")
